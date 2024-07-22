@@ -1,0 +1,47 @@
+name: Trigger auto deployment for album-ui
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/album-ui-AutoDeployTrigger-f8cf30d9-b5c6-434b-9daa-ba2f32b41aaa.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.ALBUMUI_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.ALBUMUI_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.ALBUMUI_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: caf2c0c9c8eeacr.azurecr.io
+          registryUsername: ${{ secrets.ALBUMUI_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.ALBUMUI_REGISTRY_PASSWORD }}
+          containerAppName: album-ui
+          resourceGroup: album-containerapps
+          imageToBuild: caf2c0c9c8eeacr.azurecr.io/album-ui:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
