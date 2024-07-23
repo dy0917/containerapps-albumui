@@ -41,7 +41,5 @@ jobs:
           containerAppName: album-ui
           resourceGroup: album-containerapps
           imageToBuild: caf2c0c9c8eeacr.azurecr.io/album-ui:${{ github.sha }}
-          _buildArgumentsKey_: |
-            _buildArgumentsValues_
 
 
